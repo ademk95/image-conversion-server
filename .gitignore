@@ -1,0 +1,37 @@
+# Visual Studio artifacts
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+bin/
+obj/
+artifacts/
+
+# ASP.NET Core publish folder
+publish/
+*.azurePubxml
+
+# Rider IDE
+.idea/
+*.dotCover
+*_i.c
+*_p.c
+*.iobj
+*.ipdb
+
+# Node modules (if any front-end)
+node_modules/
+npm-debug.log
+
+# User specific
+*.rsuser
+*.DotSettings.user

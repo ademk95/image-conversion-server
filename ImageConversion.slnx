@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ImageConversion.Data/ImageConversion.Data.csproj" />
+    <Project Path="src/ImageConversion.Server/ImageConversion.Server.csproj" Id="19900546-c2d6-4b93-98c5-beb31f1fb333" />
+    <Project Path="src/ImageConversion.Services/ImageConversion.Services.csproj" />
+    <Project Path="src/ImageConversion.Shared/ImageConversion.Shared.csproj" Id="6ce9f720-a3c9-4e59-8027-9b591951e1f9" />
+  </Folder>
+</Solution>
