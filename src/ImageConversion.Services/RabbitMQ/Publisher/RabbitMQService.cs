@@ -35,7 +35,7 @@ public class RabbitMQService : IRabbitMQService
         await channel.QueueDeclareAsync(queue: RabbitMqSettings.QueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
         await channel.ExchangeDeclareAsync(RabbitMqSettings.ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false);
-        await channel.QueueBindAsync(RabbitMqSettings.QueueName, RabbitMqSettings.ExchangeRouteKey, routingKey: RabbitMqSettings.ExchangeRouteKey);
+        await channel.QueueBindAsync(RabbitMqSettings.QueueName, RabbitMqSettings.ExchangeName, routingKey: RabbitMqSettings.ExchangeRouteKey);
 
         var body = Encoding.UTF8.GetBytes(message);
 
