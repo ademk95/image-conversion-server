@@ -6,3 +6,8 @@ public static class RabbitMqSettings
     public const string ExchangeName = "image_conversion_exchange";
     public const string ExchangeRouteKey = "image_conversion_route_key";
 }
+
+public static class RedisSettings
+{
+    public const string RedisImageConversionCacheKey = "image_conversions";
+}

@@ -2,6 +2,7 @@ using ImageConversion.Data;
 using ImageConversion.Services.Hubs;
 using ImageConversion.Services.ImageFile.Extensions;
 using ImageConversion.Services.RabbitMQ.Extensions;
+using ImageConversion.Services.Redis.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // PostgreSQL connection string
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 builder.Services.AddDbContext<ImageConversionContext>(options => options.UseNpgsql(connectionString));
-
+builder.Services.AddRedisServices(builder.Configuration);
 builder.Services.AddImageFileServices();
 builder.Services.AddRabbitMQServices();
 

@@ -1,6 +1,8 @@
 ﻿using ImageConversion.Data;
 using ImageConversion.Services.Hubs;
 using ImageConversion.Services.RabbitMQ.Publisher;
+using ImageConversion.Services.Redis;
+using ImageConversion.Shared.Constant;
 using ImageConversion.Shared.ImageFiles;
 using ImageConversion.Shared.RabbitMQ;
 using ImageMagick;
@@ -16,8 +18,10 @@ public class ImageFileService : IImageFileService
     private readonly IRabbitMQService _rabbitMQService;
     private readonly ImageConversionContext _context;
     private readonly IHubContext<ImageConversionHub> _hub;
+    private readonly IRedisService _redisService;
 
     public ImageFileService(
+        IRedisService redisService,
         IHubContext<ImageConversionHub> hub,
         IRabbitMQService rabbitMQService,
         ImageConversionContext context)
@@ -25,6 +29,7 @@ public class ImageFileService : IImageFileService
         _rabbitMQService = rabbitMQService;
         _context = context;
         _hub = hub;
+        _redisService = redisService;
     }
 
     public async Task Conversion(IFormFile file, string target, string connId)
@@ -42,7 +47,7 @@ public class ImageFileService : IImageFileService
             {
                 FileName = file.FileName,
                 SourceExtension = Path.GetExtension(file.FileName),
-                TargetExtension = $".{target}",             
+                TargetExtension = $".{target}",
                 ProcessStatus = Data.Enums.ProcessStatus.InProgress,
                 Content = Array.Empty<byte>()
             };
@@ -96,6 +101,8 @@ public class ImageFileService : IImageFileService
             await _context.SaveChangesAsync();
 
             await _hub.Clients.Client(connId).SendAsync("ConversionCompleted", imageFile.Id);
+
+            await SetCache();
         }
         catch (Exception e)
         {
@@ -125,6 +132,33 @@ public class ImageFileService : IImageFileService
 
     public async Task<List<GetImageFileResponseDto>> Get()
     {
+        var imageFiles = new List<GetImageFileResponseDto>();
+        var data = await _redisService.GetAsync(RedisSettings.RedisImageConversionCacheKey);
+        if (data == null)
+        {
+            imageFiles = await _context.ImageFiles
+            .AsNoTracking()
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(s => new GetImageFileResponseDto
+            {
+                Content = s.Content,
+                FileName = s.FileName,
+                TargetExtension = s.TargetExtension
+            })
+            .ToListAsync();
+
+            await _redisService.SetAsync(RedisSettings.RedisImageConversionCacheKey, JsonSerializer.Serialize(imageFiles));
+
+            return imageFiles;
+        }
+
+        imageFiles = JsonSerializer.Deserialize<List<GetImageFileResponseDto>>(data) ?? new List<GetImageFileResponseDto>();
+
+        return imageFiles;
+    }
+
+    private async Task SetCache()
+    {
         var imageFiles = await _context.ImageFiles
             .AsNoTracking()
             .OrderByDescending(o => o.CreatedAt)
@@ -136,6 +170,6 @@ public class ImageFileService : IImageFileService
             })
             .ToListAsync();
 
-        return imageFiles;
+        await _redisService.SetAsync(RedisSettings.RedisImageConversionCacheKey, JsonSerializer.Serialize(imageFiles));
     }
 }
